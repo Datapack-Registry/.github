@@ -1,7 +1,7 @@
 > Related Resourcepacks can be found in the [**@Resourcepack-Registry**](https://github.com/Resourcepack-Registry) organization.
 
 # Datapacks
-- [All Datapacks](https://github.com/orgs/Resourcepack-Registry/repositories)
+- [All Datapacks](https://github.com/orgs/Datapack-Registry/repositories)
 
 ## Utility
 - 

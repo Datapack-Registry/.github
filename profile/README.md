@@ -2,7 +2,7 @@
 
 # Datapacks
 - [All Datapacks](https://github.com/orgs/Datapack-Registry/repositories)
-- [Template](https://github.com/Datapack-Registry/Template)
+- [`Template`](https://github.com/Datapack-Registry/Template)
 
-## Utility
-- 
+## Libraries
+- [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid) - Library for generating UUID strings from an entity's UUID.

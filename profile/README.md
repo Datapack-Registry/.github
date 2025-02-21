@@ -13,6 +13,6 @@
 ## Entities
 - [`armor-stand-editor`](https://github.com/Datapack-Registry/armor-stand-editor)
 
-## Environment
+## Farming
 - [`timber`](https://github.com/Datapack-Registry/timber)
 - [`vain-miner`](https://github.com/Datapack-Registry/vain-miner)

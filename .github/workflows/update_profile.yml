@@ -1,4 +1,4 @@
-name: Update Profile
+name: Collect Repository Categories
 
 on:
   workflow_dispatch:  # Manuelles Triggern
@@ -20,26 +20,32 @@ jobs:
         run: |
           pip install requests
 
-      - name: Get all repositories from the organization
+      - name: Get all public repositories from the organization
         id: repos
         run: |
-          import os
           import requests
           from pprint import pprint
           
-          token = os.getenv('GH_TOKEN')  # Dein GitHub Token
           org = "Datapack-Registry"  # Name der Organisation
-          headers = {"Authorization": f"token {token}"}
-          repos_url = f"https://api.github.com/orgs/{org}/repos?type=all"
+          repos_url = f"https://api.github.com/orgs/{org}/repos?type=public"
           
-          # Fetch all repositories
-          repos_response = requests.get(repos_url, headers=headers)
+          # Blacklist definieren
+          blacklist = ["repo-to-ignore1", "repo-to-ignore2", "repo-to-ignore3"]
+
+          # Fetch all public repositories
+          repos_response = requests.get(repos_url)
           repos = repos_response.json()
           
           # Filter Repositories die ein Category-File haben
           category_data = {}
           for repo in repos:
               repo_name = repo["name"]
+              
+              # Repository auf Blacklist prüfen
+              if repo_name in blacklist:
+                  print(f"Ignoring repository {repo_name} due to blacklist")
+                  continue  # Repository überspringen, wenn es in der Blacklist ist
+
               repo_url = f"https://github.com/{org}/{repo_name}"
               category_file_url = f"https://raw.githubusercontent.com/{org}/{repo_name}/main/category.txt"
               

@@ -80,7 +80,7 @@ jobs:
           pprint(json_data)
       
       - name: Upload the JSON file
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: category-data
           path: category_data.json

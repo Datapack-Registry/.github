@@ -7,5 +7,8 @@
 ## Libraries
 - [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid) - Library for generating UUID strings from an entity's UUID.
 
+## Entities
+- [`armor-stand-editor`](https://github.com/Datapack-Registry/armor-stand-editor)
+
 ## Environment
 - [`vain-miner`](https://github.com/Datapack-Registry/vain-miner)

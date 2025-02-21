@@ -14,14 +14,14 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq
+          sudo apt-get install -y jq curl
 
       - name: Get all public repositories from the organization
         id: repos
         run: |
           org="Datapack-Registry"  # Name der Organisation
           repos_url="https://api.github.com/orgs/$org/repos?type=public"
-
+          
           # Blacklist definieren
           blacklist=("repo-to-ignore1" "repo-to-ignore2" "repo-to-ignore3")
 
@@ -43,10 +43,13 @@ jobs:
               fi
 
               repo_url="https://github.com/$org/$repo_name"
-              category_file_url="https://raw.githubusercontent.com/$org/$repo_name/main/category.txt"
+              labels_url="https://api.github.com/repos/$org/$repo_name/labels"
+
+              # Abrufen der Labels für das Repository
+              labels_response=$(curl -s $labels_url)
               
-              # Kategorie aus der category.txt Datei einlesen
-              category=$(curl -s $category_file_url)
+              # Prüfen, ob Labels vorhanden sind, und die Kategorie extrahieren
+              category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category:")) | .name' | sed 's/category://')
 
               if [[ -z "$category" ]]; then
                   echo "No category found for repository $repo_name"

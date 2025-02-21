@@ -23,7 +23,7 @@ jobs:
           repos_url="https://api.github.com/orgs/$org/repos?type=public"
           
           # Blacklist definieren
-          blacklist=("repo-to-ignore1" "repo-to-ignore2" "repo-to-ignore3")
+          blacklist=("Template" "default")
 
           # Fetch all public repositories
           repos_response=$(curl -s $repos_url)
@@ -49,7 +49,7 @@ jobs:
               labels_response=$(curl -s $labels_url)
               
               # Prüfen, ob Labels vorhanden sind, und die Kategorie extrahieren
-              category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category:")) | .name' | sed 's/category://')
+              category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 
               if [[ -z "$category" ]]; then
                   echo "No category found for repository $repo_name"

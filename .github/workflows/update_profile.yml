@@ -6,79 +6,75 @@ on:
 jobs:
   collect-categories:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
       - name: Install dependencies
         run: |
-          pip install requests
+          sudo apt-get update
+          sudo apt-get install -y jq
 
       - name: Get all public repositories from the organization
         id: repos
         run: |
-          import requests
-          from pprint import pprint
-          
-          org = "Datapack-Registry"  # Name der Organisation
-          repos_url = f"https://api.github.com/orgs/{org}/repos?type=public"
-          
+          org="Datapack-Registry"  # Name der Organisation
+          repos_url="https://api.github.com/orgs/$org/repos?type=public"
+
           # Blacklist definieren
-          blacklist = ["repo-to-ignore1", "repo-to-ignore2", "repo-to-ignore3"]
+          blacklist=("repo-to-ignore1" "repo-to-ignore2" "repo-to-ignore3")
 
           # Fetch all public repositories
-          repos_response = requests.get(repos_url)
-          repos = repos_response.json()
+          repos_response=$(curl -s $repos_url)
           
-          # Filter Repositories die ein Category-File haben
-          category_data = {}
-          for repo in repos:
-              repo_name = repo["name"]
-              
+          # Filtern, dass wir nur öffentliche Repositories bekommen
+          repo_names=$(echo "$repos_response" | jq -r '.[].name')
+
+          category_data="{
+            \"categories\": []
+          }"
+
+          for repo_name in $repo_names; do
               # Repository auf Blacklist prüfen
-              if repo_name in blacklist:
-                  print(f"Ignoring repository {repo_name} due to blacklist")
-                  continue  # Repository überspringen, wenn es in der Blacklist ist
+              if [[ " ${blacklist[@]} " =~ " $repo_name " ]]; then
+                  echo "Ignoring repository $repo_name due to blacklist"
+                  continue
+              fi
 
-              repo_url = f"https://github.com/{org}/{repo_name}"
-              category_file_url = f"https://raw.githubusercontent.com/{org}/{repo_name}/main/category.txt"
+              repo_url="https://github.com/$org/$repo_name"
+              category_file_url="https://raw.githubusercontent.com/$org/$repo_name/main/category.txt"
               
-              try:
-                  category_response = requests.get(category_file_url)
-                  category_response.raise_for_status()
-                  category = category_response.text.strip()
-                  
-                  if category not in category_data:
-                      category_data[category] = []
-                  category_data[category].append({
-                      "url": repo_url,
-                      "name": repo_name
-                  })
-              except requests.exceptions.RequestException as e:
-                  # Datei nicht gefunden oder anderer Fehler
-                  print(f"Error in repository {repo_name}: {e}")
-          
-          # Speichern der Daten als JSON-Datei
-          json_data = {
-              "categories": [
-                  {"id": category, "repositories": repos} 
-                  for category, repos in category_data.items()
-              ]
-          }
+              # Kategorie aus der category.txt Datei einlesen
+              category=$(curl -s $category_file_url)
 
-          with open('category_data.json', 'w') as f:
-              import json
-              json.dump(json_data, f, indent=2)
+              if [[ -z "$category" ]]; then
+                  echo "No category found for repository $repo_name"
+                  continue
+              fi
 
-          # Ausgabe des erstellten JSON-Inhalts für die Logs
-          pprint(json_data)
-      
+              # Kategorie-Daten zur JSON hinzufügen
+              category_data=$(echo "$category_data" | jq \
+                --arg category "$category" \
+                --arg repo_url "$repo_url" \
+                --arg repo_name "$repo_name" \
+                '
+                  if (.categories | map(select(.id == $category)) | length > 0) then
+                    .categories |= map(
+                      if .id == $category then
+                        .repositories += [{"url": $repo_url, "name": $repo_name}]
+                      else . end
+                    )
+                  else
+                    .categories += [{"id": $category, "repositories": [{"url": $repo_url, "name": $repo_name}]}]
+                  end
+                ')
+
+          done
+
+          # JSON-Datei speichern
+          echo "$category_data" > category_data.json
+
       - name: Upload the JSON file
         uses: actions/upload-artifact@v4
         with:

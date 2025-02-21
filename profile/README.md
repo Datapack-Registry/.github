@@ -6,3 +6,6 @@
 
 ## Libraries
 - [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid) - Library for generating UUID strings from an entity's UUID.
+
+## Environment
+- [`vain-miner`](https://github.com/Datapack-Registry/vain-miner)

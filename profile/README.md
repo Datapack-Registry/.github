@@ -5,7 +5,7 @@
 
 [`Template`](https://github.com/Datapack-Registry/Template)
 
-## Libraries
+## Library
 [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid)
 
 ## Security

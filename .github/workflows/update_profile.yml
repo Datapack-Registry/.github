@@ -1,0 +1,80 @@
+name: Update Profile
+
+on:
+  workflow_dispatch:  # Manuelles Triggern
+
+jobs:
+  collect-categories:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Get all repositories from the organization
+        id: repos
+        run: |
+          import os
+          import requests
+          from pprint import pprint
+          
+          token = os.getenv('GH_TOKEN')  # Dein GitHub Token
+          org = "Datapack-Registry"  # Name der Organisation
+          headers = {"Authorization": f"token {token}"}
+          repos_url = f"https://api.github.com/orgs/{org}/repos?type=all"
+          
+          # Fetch all repositories
+          repos_response = requests.get(repos_url, headers=headers)
+          repos = repos_response.json()
+          
+          # Filter Repositories die ein Category-File haben
+          category_data = {}
+          for repo in repos:
+              repo_name = repo["name"]
+              repo_url = f"https://github.com/{org}/{repo_name}"
+              category_file_url = f"https://raw.githubusercontent.com/{org}/{repo_name}/main/category.txt"
+              
+              try:
+                  category_response = requests.get(category_file_url)
+                  category_response.raise_for_status()
+                  category = category_response.text.strip()
+                  
+                  if category not in category_data:
+                      category_data[category] = []
+                  category_data[category].append({
+                      "url": repo_url,
+                      "name": repo_name
+                  })
+              except requests.exceptions.RequestException as e:
+                  # Datei nicht gefunden oder anderer Fehler
+                  print(f"Error in repository {repo_name}: {e}")
+          
+          # Speichern der Daten als JSON-Datei
+          json_data = {
+              "categories": [
+                  {"id": category, "repositories": repos} 
+                  for category, repos in category_data.items()
+              ]
+          }
+
+          with open('category_data.json', 'w') as f:
+              import json
+              json.dump(json_data, f, indent=2)
+
+          # Ausgabe des erstellten JSON-Inhalts für die Logs
+          pprint(json_data)
+      
+      - name: Upload the JSON file
+        uses: actions/upload-artifact@v3
+        with:
+          name: category-data
+          path: category_data.json

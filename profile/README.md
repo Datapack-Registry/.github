@@ -5,15 +5,4 @@
 
 [`Template`](https://github.com/Datapack-Registry/Template)
 
-## Library
-[`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid)
-
-## Security
-[`security-craft`](https://github.com/Datapack-Registry/security-craft)
-
-## Entities
-[`armor-stand-editor`](https://github.com/Datapack-Registry/armor-stand-editor)
-
-## Farming
-[`timber`](https://github.com/Datapack-Registry/timber)
-[`vain-miner`](https://github.com/Datapack-Registry/vain-miner)
+${categories}

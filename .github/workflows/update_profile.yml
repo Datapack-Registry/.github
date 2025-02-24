@@ -80,27 +80,46 @@ jobs:
           # JSON-Datei speichern
           echo "$category_data" > category_data.json
 
+      - name: Load README Template
+        id: load_readme_template
+        run: |
+          # Lade das Template für die README.md Datei
+          readme_template=$(cat profile/template/readme.md)
+          echo "$readme_template" > profile/README.md
+
+      - name: Load Category Template
+        id: load_category_template
+        run: |
+          # Lade das Template für die Kategorie-Sektion
+          category_template=$(cat profile/template/category.md)
+
+      - name: Load Repository Template
+        id: load_repository_template
+        run: |
+          # Lade das Template für die Repository-Sektion
+          repository_template=$(cat profile/template/repository.md)
+
       - name: Create README from categories data
         run: |
-          # Template für die README-Datei
-          template="> Related Resourcepacks can be found in the [**@Resourcepack-Registry**](https://github.com/Resourcepack-Registry) organization.\n\n# Datapacks\n> [All Datapacks](https://github.com/orgs/Datapack-Registry/repositories)\n\n[\`Template\`](https://github.com/Datapack-Registry/Template)\n\n"
-
-          # Kategorien aus der JSON lesen und formatieren
+          # Lade die gesammelten Kategorien
           categories=$(cat category_data.json | jq -r '.categories[]')
 
-          # Für jede Kategorie die entsprechende Sektion erstellen
+          # Beginne mit der Template für die README
+          template=$(cat profile/README.md)
+
+          # Kategorien aus der JSON lesen und formatieren
           for category in $(echo "$categories" | jq -r '.id'); do
             category_name=$category
-            repositories=$(echo "$categories" | jq -r ".[] | select(.id == \"$category_name\") | .repositories[] | \"[\(.name)](\(.url))\"")
+            repositories=$(echo "$categories" | jq -r ".[] | select(.id == \"$category_name\") | .repositories[] | \"$repository_template\"")
 
             # Kategorie-Sektion erstellen
-            category_section="## $category_name\n$repositories\n\n"
+            category_section=$(echo "$category_template" | sed "s/\${category_name}/$category_name/" | sed "s/\${repositories}/$repositories/")
 
             # Kategorie-Sektion zu Template hinzufügen
             template="$template$category_section"
           done
 
-          # Inhalt der README.md-Datei erstellen
+          # Endgültige README.md-Datei speichern
           echo -e "$template" > profile/README.md
 
       - name: Commit and push changes to README

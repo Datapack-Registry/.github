@@ -21,7 +21,8 @@ jobs:
       - name: Get all public repositories from the organization
         id: repos
         run: |
-          org="Datapack-Registry"  # Name der Organisation
+          # Zugriff auf den Organisationsnamen aus der GitHub-Umgebung
+          org="${{ github.repository_owner }}"  # GitHub-Variable, die den Organisationsnamen enthält
           repos_url="https://api.github.com/orgs/$org/repos?type=public"
           
           # Blacklist definieren

@@ -88,7 +88,7 @@ jobs:
 
       - name: Create README from categories data
         run: |
-          categories=$(cat category_data.json | jq -r '.categories[]')
+          categories=$(cat category_data.json | jq -c '.categories')
 
           template=$(cat profile/README.md)
 

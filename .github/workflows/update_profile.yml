@@ -1,6 +1,8 @@
-name: Collect Repository Categories
+name: Collect and Generate Profile README
 
 on:
+  # schedule:
+    # - cron: '0 */12 * * *'  # Alle 12 Stunden
   workflow_dispatch:  # Manuelles Triggern
 
 jobs:
@@ -78,8 +80,33 @@ jobs:
           # JSON-Datei speichern
           echo "$category_data" > category_data.json
 
-      - name: Upload the JSON file
-        uses: actions/upload-artifact@v4
-        with:
-          name: category-data
-          path: category_data.json
+      - name: Create README from categories data
+        run: |
+          # Template für die README-Datei
+          template="> Related Resourcepacks can be found in the [**@Resourcepack-Registry**](https://github.com/Resourcepack-Registry) organization.\n\n# Datapacks\n> [All Datapacks](https://github.com/orgs/Datapack-Registry/repositories)\n\n[\`Template\`](https://github.com/Datapack-Registry/Template)\n\n"
+
+          # Kategorien aus der JSON lesen und formatieren
+          categories=$(cat category_data.json | jq -r '.categories[]')
+
+          # Für jede Kategorie die entsprechende Sektion erstellen
+          for category in $(echo "$categories" | jq -r '.id'); do
+            category_name=$category
+            repositories=$(echo "$categories" | jq -r ".[] | select(.id == \"$category_name\") | .repositories[] | \"[\(.name)](\(.url))\"")
+
+            # Kategorie-Sektion erstellen
+            category_section="## $category_name\n$repositories\n\n"
+
+            # Kategorie-Sektion zu Template hinzufügen
+            template="$template$category_section"
+          done
+
+          # Inhalt der README.md-Datei erstellen
+          echo -e "$template" > profile/README.md
+
+      - name: Commit and push changes to README
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add profile/README.md
+          git commit -m "Update profile README with latest repositories"
+          git push origin main

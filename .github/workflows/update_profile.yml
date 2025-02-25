@@ -21,13 +21,13 @@ jobs:
         id: repos
         run: |
           organization="${{ github.repository_owner }}"
-          repos_url="https://api.github.com/orgs/$organization/repos?type=public"
+          repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
           blacklist=(".github" "Template" "default")
 
-          repository_response=$(curl -s $repos_url)
+          repositories_response=$(curl -s $repositories_url)
           
-          repository_names=$(echo "$repository_response" | jq -r '.[].name')
+          repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
           category_data="{
             \"categories\": []

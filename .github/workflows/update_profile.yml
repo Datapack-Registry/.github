@@ -30,7 +30,7 @@ jobs:
           repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
           echo "::group:: Found the following repositories:"
-          echo $repository_names
+          echo '- $(sed -e "s/\n- /$repository_names/")'
           echo "::endgroup::"
           
           category_data="{

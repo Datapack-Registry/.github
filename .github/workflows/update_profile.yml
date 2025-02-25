@@ -88,9 +88,7 @@ jobs:
           final_readme="$readme_template"
           
           echo "$category_data" | jq -c '.categories[]' | while read category; do
-            echo $category
             category_name=$(echo $category | jq -r '.id')
-            echo $category_name
             repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""
@@ -106,7 +104,8 @@ jobs:
             # Verwende awk für die Kategorie
             category_content=$(echo "$category_template" | awk -v category_name="$category_name" -v repositories="$repository_list" '{gsub(/\${category_name}/, category_name); gsub(/\${repositories}/, repositories); print}')
             
-            final_readme=$(echo "$final_readme" | awk -v category_content="$category_content" '{gsub(/\${categories}/, category_content"\n${categories}"); print}')
+            # Füge die Kategorie mit den Repositories zur finalen README hinzu
+            final_readme=$(echo "$final_readme" | awk -v category_content="$category_content" '{gsub(/\${categories}/, category_content); print}')
           done
 
           echo "$final_readme" > profile/README.md

@@ -101,7 +101,8 @@ jobs:
           echo "::endgroup::"
           
           # Speichern der generierten JSON-Daten in einer Datei
-          echo "$category_data" > category_data.json
+          echo "$category_data" > "profile/category_data.json"
+
 
       - name: Generate README from Template
         run: |
@@ -112,7 +113,7 @@ jobs:
           
           # Generiere den 'categories' Abschnitt
           categories_content=""
-          for category in $(jq -r '.categories[].id' category_data.json); do
+          for category in $(jq -r '.categories[].id' "profile/category_data.json"); do
               # Generiere den 'repositories' Abschnitt für jede Kategorie
               repositories_content=""
               for repo in $(jq -r ".categories[] | select(.id == \"$category\") | .repositories[] | @base64" category_data.json); do
@@ -136,8 +137,17 @@ jobs:
           final_md=$(echo "$template_md" | awk -v categories="$categories_content" '{gsub(/\${categories}/, categories); print}')
 
           echo "::group:: Done generating Markdown file"
-          echo -e $final_md
+          echo $final_md
           echo "::endgroup::"
           
           # Speichere das endgültige README
           echo "$final_md" > "profile/README.md"
+
+          
+      - name: Upload generated artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-readme-and-json
+          path: |
+            profile/README.md
+            profile/category_data.json

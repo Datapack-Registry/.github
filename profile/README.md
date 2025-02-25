@@ -5,9 +5,9 @@
 
 [`Template`](https://github.com/Datapack-Registry/Template)
 
-## Security
+## security
 [`security-craft`](https://github.com/Datapack-Registry/security-craft)
-## Library
+## library
 [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid)
-## Player Data
+## player-data
 [`lib-uuid`](https://github.com/Datapack-Registry/lib-uuid)

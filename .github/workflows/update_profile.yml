@@ -26,9 +26,13 @@ jobs:
           blacklist=(".github" "Template" "default")
 
           repositories_response=$(curl -s $repositories_url)
+
+          echo $repositories_response
           
           repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
+          echo $repository_names
+          
           category_data="{
             \"categories\": []
           }"

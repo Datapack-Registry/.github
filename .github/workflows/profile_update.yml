@@ -117,7 +117,7 @@ jobs:
       - name: Generate README from Template
         run: |
           # Read the config file
-          config=$(cat ".github/workflows/config.json")
+          config=$(cat "$PATH_PROFILE_CONFIG")
           category_mapping=$(echo "$config" | jq -r '.category_mapping')
 
           # Read Markdown templates

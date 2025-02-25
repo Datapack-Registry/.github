@@ -5,4 +5,4 @@
 
 [`Template`](https://github.com/Datapack-Registry/Template)
 
-${categories}
+${categories}## security## library

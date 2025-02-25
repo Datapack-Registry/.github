@@ -87,9 +87,7 @@ jobs:
 
           final_readme="$readme_template"
 
-          categories=$(echo "$category_data" | jq -r '.categories')
-
-          jq '.[]' $categories | while read category; do
+          for category in $(echo "$category_data" | jq -r '.categories[]'); do
             echo $category
             category_name=$(echo $category | jq -r '.id')
             echo $category_name

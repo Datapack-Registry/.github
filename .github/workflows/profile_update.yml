@@ -107,16 +107,12 @@ jobs:
               echo "::endgroup::"
           done
 
-          echo "::group:: Done generating JSON data"
-          echo "$category_data" | jq .
-          echo "::endgroup::"
+          echo "Done generating JSON data"
           
-          # Save the generated JSON data in a file
           echo "$category_data" > "profile/category_data.json"
 
       - name: Generate README from Template
         run: |
-          # Read the config file
           config=$(cat "$PATH_PROFILE_CONFIG")
           category_mapping=$(echo "$config" | jq -r '.category_mapping')
 

@@ -136,7 +136,7 @@ jobs:
           final_md=$(echo "$template_md" | awk -v categories="$categories_content" '{gsub(/\${categories}/, categories); print}')
 
           echo "::group:: Done generating Markdown file"
-          echo $final_md
+          echo -e $final_md
           echo "::endgroup::"
           
           # Speichere das endgültige README

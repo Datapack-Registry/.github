@@ -116,7 +116,7 @@ jobs:
           for category in $(jq -r '.categories[].id' "profile/category_data.json"); do
               # Generiere den 'repositories' Abschnitt für jede Kategorie
               repositories_content=""
-              for repo in $(jq -r ".categories[] | select(.id == \"$category\") | .repositories[] | @base64" category_data.json); do
+              for repo in $(jq -r ".categories[] | select(.id == \"$category\") | .repositories[] | @base64" "profile/category_data.json"); do
                   _jq() {
                     echo ${repo} | base64 --decode | jq -r ${1}
                   }

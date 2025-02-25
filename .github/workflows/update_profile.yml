@@ -22,27 +22,30 @@ jobs:
         run: |
           organization="${{ github.repository_owner }}"
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
-          
           blacklist=(".github" "Template" "default")
-
+          
+          echo "Fetching all public repositories for \"$organization\"..."
           repositories_response=$(curl -s $repositories_url)
           
           repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
-          echo "Found the following repositories:"
+          echo "::group:: Found the following repositories:"
           echo $repository_names
+          echo "::endgroup::"
           
           category_data="{
             \"categories\": []
           }"
 
           for repository_name in $repository_names; do
+              
+              echo "::group:: Processing \"$repository_name\""
+              
               if [[ " ${blacklist[@]} " =~ " $repository_name " ]]; then
-                  echo "Ignoring repository $repository_name due to blacklist"
+                  echo "Ignoring repository \"$repository_name\" due to blacklist."
                   continue
               fi
               
-              echo "Processing: $repository_name"
               
               repository_url="https://github.com/$organization/$repository_name"
               labels_url="https://api.github.com/repos/$organization/$repository_name/labels"
@@ -71,50 +74,9 @@ jobs:
                     .categories += [{"id": $category, "repositories": [{"url": $repository_url, "name": $repository_name}]}]
                   end
                 ')
-
+                
+              echo "::endgroup::"
           done
 
           echo "$category_data" > category_data.json
           echo $category_data
-
-      - name: Generate README from templates
-        run: |
-          category_data=$(cat category_data.json)
-          
-          readme_template=$(cat profile/template/readme.md)
-          category_template=$(cat profile/template/category.md)
-          repository_template=$(cat profile/template/repository.md)
-
-          final_readme="$readme_template"
-          
-          echo "$category_data" | jq -c '.categories[]' | while read category; do
-            category_name=$(echo $category | jq -r '.id')
-            repositories=$(echo $category | jq -r '.repositories')
-            
-            repository_list=""
-            echo "$category" | jq -c '.repositories[]' | while read repository; do
-              repository_name=$(echo $repository | jq -r '.name')
-              repository_url=$(echo $repository | jq -r '.url')
-              
-              # Verwende awk für die Ersetzung
-              repository_content=$(echo "$repository_template" | awk -v repository_name="$repository_name" -v repository_url="$repository_url" '{gsub(/\${repository_name}/, repository_name); gsub(/\${repository_url}/, repository_url); print}')
-              repository_list="$repository_list\n$repository_content"
-            done
-            
-            # Verwende awk für die Kategorie
-            category_content=$(echo "$category_template" | awk -v category_name="$category_name" -v repositories="$repository_list" '{gsub(/\${category_name}/, category_name); gsub(/\${repositories}/, repositories); print}')
-            
-            # Füge die Kategorie mit den Repositories zur finalen README hinzu
-            final_readme=$(echo "$final_readme" | sed "s|\${categories}|$category_content\n\${categories}|")
-          done
-
-          echo "$final_readme" > profile/README.md
-          cat profile/README.md
-
-      - name: Commit and push changes to README
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add profile/README.md
-          git commit -m "Update profile README with latest repositories"
-          git push origin main

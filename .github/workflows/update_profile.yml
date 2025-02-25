@@ -27,7 +27,7 @@ jobs:
           blacklist=()
           while IFS= read -r line; do
               blacklist+=("$line")
-          done < "./blacklist.txt"
+          done < ".github/workflows/blacklist.txt"
           
           echo "Fetching all public repositories for \"$organization\"..."
           repositories_response=$(curl -s $repositories_url)

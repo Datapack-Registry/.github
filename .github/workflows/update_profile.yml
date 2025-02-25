@@ -11,7 +11,7 @@ permissions:
   
 jobs:
   collect-categories:
-    name: 'Collect Categories'
+    name: 'Generate JSON data'
     runs-on: ubuntu-latest
 
     steps:

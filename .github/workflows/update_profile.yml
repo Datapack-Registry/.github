@@ -89,7 +89,7 @@ jobs:
 
           categories=$(echo "$category_data" | jq -r '.categories')
 
-          jq -c '.[]' $categories | while read category; do
+          jq '.[]' $categories | while read category; do
             echo $category
             category_name=$(echo $category | jq -r '.id')
             echo $category_name

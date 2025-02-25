@@ -48,20 +48,18 @@ jobs:
               labels_url="https://api.github.com/repos/$organization/$repository_name/labels"
 
               labels_response=$(curl -s $labels_url)
-
-              echo $labels_response
               
               category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 
               if [[ -z "$category" ]]; then
-                  echo "No category found for repository $repo_name"
+                  echo "No category found for repository $repository_name"
                   continue
               fi
 
               category_data=$(echo "$category_data" | jq \
                 --arg category "$category" \
-                --arg repo_url "$repository_url" \
-                --arg repo_name "$repository_name" \
+                --arg repository_url "$repository_url" \
+                --arg repository_name "$repository_name" \
                 '
                   if (.categories | map(select(.id == $category)) | length > 0) then
                     .categories |= map(
@@ -77,6 +75,7 @@ jobs:
           done
 
           echo "$category_data" > category_data.json
+          echo $category_data
 
       - name: Create README from categories data
         run: |

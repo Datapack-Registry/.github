@@ -28,6 +28,8 @@ jobs:
       - name: Get all public repositories from the organization
         id: repos
         run: |
+          echo ${{ github.workflow }}
+          echo $(dirname ${{ github.workflow }})
           organization="${{ github.repository_owner }}"
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           

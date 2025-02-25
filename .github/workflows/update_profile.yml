@@ -84,27 +84,27 @@ jobs:
           repository_template=$(cat profile/template/repository.md)
           
           categories=$(cat category_data.json | jq -c '.categories')
-
-          echo "readme.md:"
-          echo $readme_template
-          echo "category.md:"
-          echo $category_template
-          echo "repository.md:"
-          echo $repository_template
-          echo "Categories JSON:"
-          echo $categories
-
-          template=$(cat profile/README.md)
-
-          for category in $(echo "$categories" | jq -r '.id'); do
-            category_name=$category
-            repositories=$(echo "$categories" | jq -r ".[] | select(.id == \"$category_name\") | .repositories[] | \"$repository_template\"")
-
-            category_section=$(echo "$category_template" | sed "s/\${category_name}/$category_name/" | sed "s/\${repositories}/$repositories/")
-
-            template="$template$category_section"
+          
+          template="$readme_template"
+          
+          for category in $(echo "$categories" | jq -r '.[] | @base64'); do
+              # Decodiere jede Kategorie
+              _jq() {
+                  echo ${category} | base64 --decode | jq -r ${1}
+              }
+              
+              # Hole den Kategorienamen
+              category_name=$(_jq '.id')
+              
+              # Hole alle Repositories dieser Kategorie und forme die Repository-Abschnitte
+              repositories=$(_jq '.repositories[] | "\(.name): \(.url)"' | sed 's/^/ - /')
+              
+              # Erstelle den Abschnitt für diese Kategorie
+              category_section=$(echo "$category_template" | sed "s/\${category_name}/$category_name/" | sed "s/\${repositories}/$repositories/")
+      
+              template="$template$category_section"
           done
-
+    
           echo -e "$template" > profile/README.md
 
       - name: Commit and push changes to README

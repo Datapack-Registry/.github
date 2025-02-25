@@ -106,9 +106,9 @@ jobs:
       - name: Generate README from Template
         run: |
           # Markdown-Templates einlesen
-          template_md=$(<".github/workflows/template.md")
-          category_template=$(<".github/workflows/category_template.md")
-          repository_template=$(<".github/workflows/repository_template.md")
+          template_md=$(<"profile/template/readme.md")
+          category_template=$(<"profile/template/category.md")
+          repository_template=$(<"profile/template/repository.md")
           
           # Generiere den 'categories' Abschnitt
           categories_content=""

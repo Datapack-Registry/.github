@@ -97,14 +97,13 @@ jobs:
             echo "$category" | jq -c '.repositories[]' | while read repository; do
               repository_name=$(echo $repository '.name')
               repository_url=$(echo $repository '.url')
+              repository_content=$(echo "$repository_template" | awk '{ gsub(/\${repository_name}([[:space:][:punct:]]+|$)/, "$repository_name&"); print }' | awk '{ gsub(/\${repository_url}([[:space:][:punct:]]+|$)/, "$repository_url&"); print }')
               
-              repository_content=$(echo "$repository_template" | sed -e "s|\${repository_name}|$repository_name|" | sed -e "s|\${repository_url}|$repository_url|")
               repository_list="$repository_list\n$repository_content"
             done
-            
-            category_content=$(echo "$category_template" | sed -e "s|\${category_name}|$category_name|" | sed -e "s|\${repositories}|$repository_list|")
-            
-            final_readme=$(echo "$final_readme" | sed -e "s|\${categories}|$category_content\n\${categories}|")
+            category_content=$(echo "$category_template" | awk '{ gsub(/\${category_name}([[:space:][:punct:]]+|$)/, "$category_name&"); print }' | awk '{ gsub(/\${repositories}([[:space:][:punct:]]+|$)/, "$repository_list&"); print }' )
+
+            final_readme=$(echo "$final-readme" | awk '{ gsub(/\${categories}([[:space:][:punct:]]+|$)/, "$category_content\n\${categories}&"); print }' )
           done
 
           echo "$final_readme" > profile/README.md

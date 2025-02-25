@@ -7,8 +7,8 @@ on:
   push:
     paths:
       - "profile/template/*"
-      - ".github/workflows/update_profile.yml"
-      - ".github/workflows/config.json"
+      - ".github/workflows/profile/update.yml"
+      - ".github/workflows/profile/config.json"
   
   workflow_dispatch:
 
@@ -34,7 +34,7 @@ jobs:
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
           # Read the config file
-          config=$(cat ".github/workflows/config.json")
+          config=$(cat ".github/workflows/profile/config.json")
           
           # Extract the blacklist and category mapping
           blacklist=$(echo "$config" | jq -r '.blacklist[]')

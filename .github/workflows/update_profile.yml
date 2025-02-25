@@ -24,8 +24,10 @@ jobs:
           organization="${{ github.repository_owner }}"
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
+          # Einlesen der Blacklist
+          blacklist=()
           while IFS= read -r line; do
-              trimmed_line=$(echo "$line" | xargs)
+              trimmed_line=$(echo "$line" | xargs)  # Entfernen von führenden/nachfolgenden Leerzeichen
               blacklist+=("$trimmed_line")
           done < ".github/workflows/blacklist.txt"
           
@@ -38,6 +40,7 @@ jobs:
           echo "$repository_names" | sed 's/[^ ]*/- &/g'
           echo "::endgroup::"
           
+          # Initiales JSON-Datenobjekt
           category_data="{
             \"categories\": []
           }"
@@ -46,6 +49,7 @@ jobs:
           for repository_name in $repository_names; do
               echo "::group:: Processing \"$repository_name\""
               
+              # Repository in der Blacklist überspringen
               if [[ " ${blacklist[@]} " =~ " $repository_name " ]]; then
                   echo "::warning:: Ignoring repository \"$repository_name\" due to blacklist."
                   echo "::endgroup::"
@@ -58,38 +62,43 @@ jobs:
               echo "Fetching labels..."
               labels_response=$(curl -s $labels_url)
 
-              echo "Searching for \"category: \" prefix..."
-              category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
+              # Alle Kategorien (Labels mit Präfix "category: ") extrahieren
+              categories=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 
-              if [[ -z "$category" ]]; then
-                  echo "::warning:: Ignoring repository \"$repository_name\" because no category was found."
+              if [[ -z "$categories" ]]; then
+                  echo "::warning:: Ignoring repository \"$repository_name\" because no categories were found."
                   echo "::endgroup::"
                   continue
               fi
               
-              echo "Found label category \"$category\"."
+              echo "Found label categories: $categories"
               
-              echo "Generating JSON entry..."
-              category_data=$(echo "$category_data" | jq \
-                --arg category "$category" \
-                --arg repository_url "$repository_url" \
-                --arg repository_name "$repository_name" \
-                '
-                  if (.categories | map(select(.id == $category)) | length > 0) then
-                    .categories |= map(
-                      if .id == $category then
-                        .repositories += [{"url": $repository_url, "name": $repository_name}]
-                      else . end
-                    )
-                  else
-                    .categories += [{"id": $category, "repositories": [{"url": $repository_url, "name": $repository_name}]}]
-                  end
-                ')
-                
+              # Für jede gefundene Kategorie einen Eintrag im JSON hinzufügen
+              for category in $categories; do
+                  echo "Generating JSON entry for category \"$category\"..."
+                  category_data=$(echo "$category_data" | jq \
+                    --arg category "$category" \
+                    --arg repository_url "$repository_url" \
+                    --arg repository_name "$repository_name" \
+                    '
+                      if (.categories | map(select(.id == $category)) | length > 0) then
+                        .categories |= map(
+                          if .id == $category then
+                            .repositories += [{"url": $repository_url, "name": $repository_name}]
+                          else . end
+                        )
+                      else
+                        .categories += [{"id": $category, "repositories": [{"url": $repository_url, "name": $repository_name}]}]
+                      end
+                    ')
+              done
+              
               echo "::endgroup::"
           done
 
           echo "::group:: Done generating JSON data"
           echo "$category_data" | jq .
           echo "::endgroup::"
+          
+          # Speichern der generierten JSON-Daten in einer Datei
           echo "$category_data" > category_data.json

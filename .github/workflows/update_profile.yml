@@ -86,8 +86,8 @@ jobs:
           repository_template=$(cat profile/template/repository.md)
 
           final_readme="$readme_template"
-
-          for category in $(echo "$category_data" | jq -r '.categories[]'); do
+          
+          echo "$category_data" | jq -c '.categories[]' | while read category; do
             echo $category
             category_name=$(echo $category | jq -r '.id')
             echo $category_name

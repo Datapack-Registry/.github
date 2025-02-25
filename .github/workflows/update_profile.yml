@@ -1,7 +1,9 @@
 name: 'Update Profile README'
 
 on:
-  workflow_dispatch:  # Manuelles Triggern
+  # schedule:
+    # - cron: '0 */12 * * *'  # Alle 12 Stunden
+  workflow_dispatch:  # Manual trigger
 
 permissions:
   contents: write
@@ -22,10 +24,10 @@ jobs:
           organization="${{ github.repository_owner }}"
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
-          # Einlesen der Konfigurationsdatei
+          # Read the config file
           config=$(cat ".github/workflows/config.json")
           
-          # Extrahiere die Blacklist und das Category Mapping
+          # Extract the blacklist and category mapping
           blacklist=$(echo "$config" | jq -r '.blacklist[]')
           category_mapping=$(echo "$config" | jq -r '.category_mapping')
 
@@ -38,7 +40,7 @@ jobs:
           echo "$repository_names" | sed 's/[^ ]*/- &/g'
           echo "::endgroup::"
           
-          # Initiales JSON-Datenobjekt
+          # Initial JSON object for category data
           category_data="{
             \"categories\": []
           }"
@@ -47,7 +49,7 @@ jobs:
           for repository_name in $repository_names; do
               echo "::group:: Processing \"$repository_name\""
               
-              # Repository in der Blacklist überspringen
+              # Skip repository if it's in the blacklist
               if echo "$blacklist" | grep -q "$repository_name"; then
                   echo "::warning:: Ignoring repository \"$repository_name\" due to blacklist."
                   echo "::endgroup::"
@@ -60,7 +62,7 @@ jobs:
               echo "Fetching labels..."
               labels_response=$(curl -s $labels_url)
 
-              # Alle Kategorien (Labels mit Präfix "category: ") extrahieren
+              # Extract all categories (labels with prefix "category: ")
               categories=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 
               if [[ -z "$categories" ]]; then
@@ -71,7 +73,7 @@ jobs:
               
               echo "Found label categories: $categories"
               
-              # Für jede gefundene Kategorie einen Eintrag im JSON hinzufügen
+              # Add an entry in the JSON for each found category
               for category in $categories; do
                   echo "Generating JSON entry for category \"$category\"..."
                   category_data=$(echo "$category_data" | jq \
@@ -98,27 +100,27 @@ jobs:
           echo "$category_data" | jq .
           echo "::endgroup::"
           
-          # Speichern der generierten JSON-Daten in einer Datei
+          # Save the generated JSON data in a file
           echo "$category_data" > "profile/category_data.json"
 
       - name: Generate README from Template
         run: |
-          # Einlesen der Konfigurationsdatei
+          # Read the config file
           config=$(cat ".github/workflows/config.json")
           category_mapping=$(echo "$config" | jq -r '.category_mapping')
 
-          # Markdown-Templates einlesen
+          # Read Markdown templates
           template_md=$(<"profile/template/readme.md")
           category_template=$(<"profile/template/category.md")
           repository_template=$(<"profile/template/repository.md")
           
-          # Generiere den 'categories' Abschnitt
+          # Generate the 'categories' section
           categories_content=""
           for category in $(jq -r '.categories[].id' "profile/category_data.json"); do
-              # Finde den richtigen Namen für die Kategorie
+              # Find the correct name for the category
               category_name=$(echo "$category_mapping" | jq -r --arg category "$category" '.[$category]')
               
-              # Generiere den 'repositories' Abschnitt für jede Kategorie
+              # Generate the 'repositories' section for each category
               repositories_content=""
               for repo in $(jq -r ".categories[] | select(.id == \"$category\") | .repositories[] | @base64" "profile/category_data.json"); do
                   _jq() {
@@ -127,24 +129,24 @@ jobs:
                   repo_name=$(_jq '.name')
                   repo_url=$(_jq '.url')
                   
-                  # Ersetze den Platzhalter für das Repository
+                  # Replace the placeholder for the repository
                   repo_markdown=$(echo "$repository_template" | awk -v name="$repo_name" -v url="$repo_url" '{gsub(/\${repository_name}/, name); gsub(/\${repository_url}/, url); print}')
                   repositories_content+="$repo_markdown\n"
               done
               
-              # Ersetze den Platzhalter für die Kategorie
+              # Replace the placeholder for the category
               category_markdown=$(echo "$category_template" | awk -v name="$category_name" -v repos="$repositories_content" '{gsub(/\${category_name}/, name); gsub(/\${repositories}/, repos); print}')
               categories_content+="$category_markdown\n"
           done
           
-          # Ersetze den Platzhalter ${categories} im Haupttemplate
+          # Replace the placeholder ${categories} in the main template
           final_md=$(echo "$template_md" | awk -v categories="$categories_content" '{gsub(/\${categories}/, categories); print}')
 
           echo "::group:: Done generating Markdown file"
           echo $final_md
           echo "::endgroup::"
           
-          # Speichere das endgültige README
+          # Save the final README
           echo "$final_md" > "profile/README.md"
 
       - name: 'Commit and push new README.md'

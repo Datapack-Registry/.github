@@ -98,7 +98,7 @@ jobs:
               repository_name=$(echo $repository '.name')
               repository_url=$(echo $repository '.url')
               
-              repository_content=$(echo "$repository_template" | sed -e "s/\${repository_name}/$repository_name/" | sed -e "s/\${repository_url}/$repository_url/")
+              repository_content=$(echo "$repository_template" | sed -e "s/\${repository_name}/$repository_name/" | sed -e "s@\${repository_url}@$repository_url@")
               repository_list="$repository_list\n$repository_content"
             done
             

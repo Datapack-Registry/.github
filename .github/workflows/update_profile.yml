@@ -47,6 +47,8 @@ jobs:
               labels_url="https://api.github.com/repos/$organization/$repository_url/labels"
 
               labels_response=$(curl -s $labels_url)
+
+              echo $labels_response
               
               category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 

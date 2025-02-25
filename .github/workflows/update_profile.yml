@@ -29,7 +29,8 @@ jobs:
           
           repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
-          echo "Found the following repositories: $repository_names"
+          echo "Found the following repositories:"
+          echo $repository_names
           
           category_data="{
             \"categories\": []
@@ -44,7 +45,7 @@ jobs:
               echo "Processing: $repository_name"
               
               repository_url="https://github.com/$organization/$repository_name"
-              labels_url="https://api.github.com/repos/$organization/$repository_url/labels"
+              labels_url="https://api.github.com/repos/$organization/$repository_name/labels"
 
               labels_response=$(curl -s $labels_url)
 

@@ -105,7 +105,7 @@ jobs:
             category_content=$(echo "$category_template" | awk -v category_name="$category_name" -v repositories="$repository_list" '{gsub(/\${category_name}/, category_name); gsub(/\${repositories}/, repositories); print}')
             
             # Füge die Kategorie mit den Repositories zur finalen README hinzu
-            final_readme=$(echo "$final_readme" | awk -v category_content="$category_content" '{gsub(/\${categories}/, category_content); print}')
+            final_readme=$(echo "$final_readme" | sed "s|\${categories}|$category_content\n\${categories}|")
           done
 
           echo "$final_readme" > profile/README.md

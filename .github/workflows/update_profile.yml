@@ -88,20 +88,25 @@ jobs:
           final_readme="$readme_template"
           
           echo "$category_data" | jq -c '.categories[]' | while read category; do
+            echo $category
             category_name=$(echo $category | jq -r '.id')
+            echo $category_name
             repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""
             echo "$category" | jq -c '.repositories[]' | while read repository; do
-              repository_name=$(echo $repository '.name')
-              repository_url=$(echo $repository '.url')
-              repository_content=$(echo "$repository_template" | awk '{ gsub(/\${repository_name}([[:space:][:punct:]]+|$)/, "$repository_name&"); print }' | awk '{ gsub(/\${repository_url}([[:space:][:punct:]]+|$)/, "$repository_url&"); print }')
-              echo $repository_content
+              repository_name=$(echo $repository | jq -r '.name')
+              repository_url=$(echo $repository | jq -r '.url')
+              
+              # Verwende awk für die Ersetzung
+              repository_content=$(echo "$repository_template" | awk -v repository_name="$repository_name" -v repository_url="$repository_url" '{gsub(/\${repository_name}/, repository_name); gsub(/\${repository_url}/, repository_url); print}')
               repository_list="$repository_list\n$repository_content"
             done
-            category_content=$(echo "$category_template" | awk '{ gsub(/\${category_name}([[:space:][:punct:]]+|$)/, "$category_name&"); print }' | awk '{ gsub(/\${repositories}([[:space:][:punct:]]+|$)/, "$repository_list&"); print }' )
-
-            final_readme=$(echo "$final-readme" | awk '{ gsub(/\${categories}([[:space:][:punct:]]+|$)/, "$category_content\n\${categories}&"); print }' )
+            
+            # Verwende awk für die Kategorie
+            category_content=$(echo "$category_template" | awk -v category_name="$category_name" -v repositories="$repository_list" '{gsub(/\${category_name}/, category_name); gsub(/\${repositories}/, repositories); print}')
+            
+            final_readme=$(echo "$final_readme" | awk -v category_content="$category_content" '{gsub(/\${categories}/, category_content"\n${categories}"); print}')
           done
 
           echo "$final_readme" > profile/README.md

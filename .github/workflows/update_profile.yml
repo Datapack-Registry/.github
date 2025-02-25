@@ -88,9 +88,7 @@ jobs:
           final_readme="$readme_template"
           
           echo "$category_data" | jq -c '.categories[]' | while read category; do
-            echo $category
             category_name=$(echo $category | jq -r '.id')
-            echo $category_name
             repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""
@@ -98,7 +96,7 @@ jobs:
               repository_name=$(echo $repository '.name')
               repository_url=$(echo $repository '.url')
               repository_content=$(echo "$repository_template" | awk '{ gsub(/\${repository_name}([[:space:][:punct:]]+|$)/, "$repository_name&"); print }' | awk '{ gsub(/\${repository_url}([[:space:][:punct:]]+|$)/, "$repository_url&"); print }')
-              
+              echo repository_content
               repository_list="$repository_list\n$repository_content"
             done
             category_content=$(echo "$category_template" | awk '{ gsub(/\${category_name}([[:space:][:punct:]]+|$)/, "$category_name&"); print }' | awk '{ gsub(/\${repositories}([[:space:][:punct:]]+|$)/, "$repository_list&"); print }' )

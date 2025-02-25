@@ -143,15 +143,6 @@ jobs:
           # Speichere das endgültige README
           echo "$final_md" > "profile/README.md"
 
-          
-      - name: Upload generated artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-readme-and-json
-          path: |
-            profile/README.md
-            profile/category_data.json
-
             
       - name: 'Commit and push new README.md'
         run: |

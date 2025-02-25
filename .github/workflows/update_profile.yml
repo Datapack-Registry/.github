@@ -85,5 +85,7 @@ jobs:
               echo "::endgroup::"
           done
 
+          echo "::group:: Done generating JSON data"
+          echo "$category_data" | jq .
+          echo "::endgroup::"
           echo "$category_data" > category_data.json
-          echo $category_data

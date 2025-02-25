@@ -24,9 +24,9 @@ jobs:
           organization="${{ github.repository_owner }}"
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
-          blacklist=()
           while IFS= read -r line; do
-              blacklist+=("$line")
+              trimmed_line=$(echo "$line" | xargs)
+              blacklist+=("$trimmed_line")
           done < ".github/workflows/blacklist.txt"
           
           echo "Fetching all public repositories for \"$organization\"..."

@@ -1,0 +1,12 @@
+{
+  "category_mapping": {
+    "player-data": "Player Data",
+    "security": "Security",
+    "library": "Library"
+  },
+  "blacklist": [
+    "repo-1",
+    "repo-2",
+    "repo-3"
+  ]
+}

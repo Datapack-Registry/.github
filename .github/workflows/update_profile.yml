@@ -86,12 +86,13 @@ jobs:
           repository_template=$(cat profile/template/repository.md)
 
           final_readme="$readme_template"
-          echo $category_data
-          categories=$(echo "$category_data" | jq -r '.categories')
-          echo $categories
-          for category in $(echo "$categories" | jq -r '.[]'); do
-            category_name=$(echo $category | jq -r '.id')
 
+          categories=$(echo "$category_data" | jq -r '.categories')
+
+          for category in $(echo "$categories" | jq -r '.[]'); do
+            echo $category
+            category_name=$(echo $category | jq -r '.id')
+            echo $category_name
             repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""

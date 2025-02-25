@@ -102,3 +102,42 @@ jobs:
           
           # Speichern der generierten JSON-Daten in einer Datei
           echo "$category_data" > category_data.json
+
+      - name: Generate README from Template
+        run: |
+          # Markdown-Templates einlesen
+          template_md=$(<".github/workflows/template.md")
+          category_template=$(<".github/workflows/category_template.md")
+          repository_template=$(<".github/workflows/repository_template.md")
+          
+          # Generiere den 'categories' Abschnitt
+          categories_content=""
+          for category in $(jq -r '.categories[].id' category_data.json); do
+              # Generiere den 'repositories' Abschnitt für jede Kategorie
+              repositories_content=""
+              for repo in $(jq -r ".categories[] | select(.id == \"$category\") | .repositories[] | @base64" category_data.json); do
+                  _jq() {
+                    echo ${repo} | base64 --decode | jq -r ${1}
+                  }
+                  repo_name=$(_jq '.name')
+                  repo_url=$(_jq '.url')
+                  
+                  # Ersetze den Platzhalter für das Repository
+                  repo_markdown=$(echo "$repository_template" | awk -v name="$repo_name" -v url="$repo_url" '{gsub(/\${repository_name}/, name); gsub(/\${repository_url}/, url); print}')
+                  repositories_content+="$repo_markdown\n"
+              done
+              
+              # Ersetze den Platzhalter für die Kategorie
+              category_markdown=$(echo "$category_template" | awk -v name="$category" -v repos="$repositories_content" '{gsub(/\${category_name}/, name); gsub(/\${repositories}/, repos); print}')
+              categories_content+="$category_markdown\n"
+          done
+          
+          # Ersetze den Platzhalter ${categories} im Haupttemplate
+          final_md=$(echo "$template_md" | awk -v categories="$categories_content" '{gsub(/\${categories}/, categories); print}')
+
+          echo "::group:: Done generating Markdown file"
+          echo $final_md
+          echo "::endgroup::"
+          
+          # Speichere das endgültige README
+          echo "$final_md" > README.md

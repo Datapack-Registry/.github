@@ -1,4 +1,0 @@
-.github
-Template
-default
-specification

@@ -42,7 +42,7 @@ jobs:
               echo "::group:: Processing \"$repository_name\""
               
               if [[ " ${blacklist[@]} " =~ " $repository_name " ]]; then
-                  echo "Ignoring repository \"$repository_name\" due to blacklist."
+                  echo "::warning:: Ignoring repository \"$repository_name\" due to blacklist."
                   continue
               fi
               

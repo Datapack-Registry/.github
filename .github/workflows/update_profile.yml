@@ -94,7 +94,7 @@ jobs:
             repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""
-            for repository in $(echo "$repositories" | jq -r '.[]'); do
+            echo "$category" | jq -c '.repositories[]' | while read repository; do
               repository_name=$(echo $repository '.name')
               repository_url=$(echo $repository '.url')
               

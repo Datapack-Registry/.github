@@ -40,25 +40,32 @@ jobs:
 
           echo "Processing repositories..."
           for repository_name in $repository_names; do
+              echo "::group:: Processing \"$repository_name\""
+              
               if [[ " ${blacklist[@]} " =~ " $repository_name " ]]; then
                   echo "::warning:: Ignoring repository \"$repository_name\" due to blacklist."
+                  echo "::endgroup::"
                   continue
               fi
-              
-              echo "::group:: Processing \"$repository_name\""
               
               repository_url="https://github.com/$organization/$repository_name"
               labels_url="https://api.github.com/repos/$organization/$repository_name/labels"
-
-              labels_response=$(curl -s $labels_url)
               
+              echo "Fetching labels..."
+              labels_response=$(curl -s $labels_url)
+
+              echo "Searching for \"category: \" prefix..."
               category=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
 
               if [[ -z "$category" ]]; then
-                  echo "No category found for repository $repository_name"
+                  echo "::warning:: Ignoring repository \"$repository_name\" because no category was found."
+                  echo "::endgroup::"
                   continue
               fi
-
+              
+              echo "Found label category \"$category\"."
+              
+              echo "Generating JSON entry..."
               category_data=$(echo "$category_data" | jq \
                 --arg category "$category" \
                 --arg repository_url "$repository_url" \

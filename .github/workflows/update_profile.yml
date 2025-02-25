@@ -82,10 +82,13 @@ jobs:
           
           categories=$(cat category_data.json | jq -c '.categories')
 
-          echo "readme.md:\n$readme_template"
-          echo "category.md:\n$category_template"
-          echo "repository.md:\n$repository_template"
-          
+          echo "readme.md:"
+          echo $readme_template
+          echo "category.md:"
+          echo $category_template
+          echo "repository.md:"
+          echo $repository_template
+          echo "Categories JSON:"
           echo $categories
 
           template=$(cat profile/README.md)

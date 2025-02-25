@@ -140,4 +140,4 @@ jobs:
           echo "::endgroup::"
           
           # Speichere das endgültige README
-          echo "$final_md" > README.md
+          echo "$final_md" > "profile/README.md"

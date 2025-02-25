@@ -1,5 +1,8 @@
 {
   "category_mapping": {
+    "security": "Security",
+    "library": "Library",
+    "player-data": "Player Data"
   },
   "blacklist": [
     ".github",

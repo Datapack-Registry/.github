@@ -74,25 +74,19 @@ jobs:
 
           echo "$category_data" > category_data.json
 
-      - name: Load README Template
-        id: load_readme_template
-        run: |
-          readme_template=$(cat profile/template/readme.md)
-          echo "$readme_template" > profile/README.md
-
-      - name: Load Category Template
-        id: load_category_template
-        run: |
-          category_template=$(cat profile/template/category.md)
-
-      - name: Load Repository Template
-        id: load_repository_template
-        run: |
-          repository_template=$(cat profile/template/repository.md)
-
       - name: Create README from categories data
         run: |
+          readme_template=$(cat profile/template/readme.md)
+          category_template=$(cat profile/template/category.md)
+          repository_template=$(cat profile/template/repository.md)
+          
           categories=$(cat category_data.json | jq -c '.categories')
+
+          echo "readme.md:\n$readme_template"
+          echo "category.md:\n$category_template"
+          echo "repository.md:\n$repository_template"
+          
+          echo $categories
 
           template=$(cat profile/README.md)
 

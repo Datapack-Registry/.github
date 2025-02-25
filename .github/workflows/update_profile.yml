@@ -34,7 +34,7 @@ jobs:
           
           repository_names=$(echo "$repositories_response" | jq -r '.[].name')
 
-          echo "::group:: Found the following repositories:"
+          echo "::group:: Found the following repositories"
           echo "$repository_names" | sed 's/[^ ]*/- &/g'
           echo "::endgroup::"
           

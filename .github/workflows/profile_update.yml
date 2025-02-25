@@ -17,7 +17,7 @@ permissions:
   actions: read
 
 env:
-  PATH_CONFIG: ".github/workflows/profile_config.json"
+  PATH_PROFILE_CONFIG: ".github/workflows/profile_config.json"
   PATH_TEMPLATE_DIRECTORY: "profile/template"
   
 jobs:
@@ -36,7 +36,7 @@ jobs:
           repositories_url="https://api.github.com/orgs/$organization/repos?type=public"
           
           # Read the config file
-          config=$(cat "$PATH_CONFIG")
+          config=$(cat "$PATH_PROFILE_CONFIG")
           
           # Extract the blacklist and category mapping
           blacklist=$(echo "$config" | jq -r '.blacklist[]')

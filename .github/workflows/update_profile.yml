@@ -1,4 +1,4 @@
-name: Collect and Generate Profile README
+name: 'Update Profile README'
 
 on:
   # schedule:
@@ -11,6 +11,7 @@ permissions:
   
 jobs:
   collect-categories:
+    name: 'Collect Categories'
     runs-on: ubuntu-latest
 
     steps:

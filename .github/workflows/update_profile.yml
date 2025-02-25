@@ -11,7 +11,7 @@ permissions:
   
 jobs:
   collect-categories:
-    name: 'Generate JSON data'
+    name: 'Update Profile README'
     runs-on: ubuntu-latest
 
     steps:
@@ -151,3 +151,12 @@ jobs:
           path: |
             profile/README.md
             profile/category_data.json
+
+            
+      - name: 'Commit and push new README.md'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add "profile/README.md"
+          git commit -a -m "Update README" || exit 0
+          git push origin generated --tags

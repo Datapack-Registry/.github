@@ -89,22 +89,15 @@ jobs:
           
           categories=$(echo "$category_data" | jq -r '.categories')
           
-          for category in $(echo "$categories" | jq -r '.[] | @base64'); do
-            _get_category_value() {
-              echo $category | base64 --decode | jq -r ${1}
-            }
+          for category in $(echo "$categories" | jq -r '.[]'); do
+            category_name=$(echo $category | jq -r '.id')
 
-            category_name=$(_get_category_value '.id')
-            repositories=$(_get_category_value '.repositories')
+            repositories=$(echo $category | jq -r '.repositories')
             
             repository_list=""
-            for repository in $(echo "$repositories" | jq -r '.[] | @base64'); do
-              _get_repo_value() {
-                echo $repository | base64 --decode | jq -r ${1}
-              }
-
-              repository_name=$(_get_repo_value '.name')
-              repository_url=$(_get_repo_value '.url')
+            for repository in $(echo "$repositories" | jq -r '.[]'); do
+              repository_name=$(echo $repository '.name')
+              repository_url=$(echo $repository '.url')
               
               repository_content=$(echo "$repository_template" | sed "s/\${repository_name}/$repository_name/" | sed "s/\${repository_url}/$repository_url/")
               repository_list="$repository_list\n$repository_content"

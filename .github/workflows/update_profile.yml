@@ -1,9 +1,14 @@
 name: 'Update Profile README'
 
 on:
-  # schedule:
-    # - cron: '0 */12 * * *'  # Alle 12 Stunden
-  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: '0 */12 * * *'
+  
+  push:
+    paths:
+      - "profile/template/*"
+  
+  workflow_dispatch:
 
 permissions:
   contents: write

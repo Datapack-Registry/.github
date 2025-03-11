@@ -33,7 +33,7 @@ jobs:
         id: repos
         run: |
           organization="${{ github.repository_owner }}"
-          repositories_url="https://api.github.com/orgs/$organization/repos?type=public&per_page=100"
+          base_url="https://api.github.com/orgs/$organization/repos?type=public&per_page=100"
           
           # Read the config file
           config=$(cat "$PATH_PROFILE_CONFIG")
@@ -43,10 +43,27 @@ jobs:
           category_mapping=$(echo "$config" | jq -r '.category_mapping')
 
           echo "Fetching all public repositories for \"$organization\"..."
-          repositories_response=$(curl -s $repositories_url)
           
-          repository_names=$(echo "$repositories_response" | jq -r '.[].name')
-
+          repository_names=""
+          next_url="$base_url"
+          
+          while [ -n "$next_url" ]; do
+              # GitHub API aufrufen
+              response=$(curl -s -i -H "Accept: application/vnd.github.v3+json" "$next_url")
+              
+              # Header und Body trennen
+              headers=$(echo "$response" | sed '/^\r$/q')  # Alles bis zur ersten Leerzeile sind die Header
+              body=$(echo "$response" | sed '1,/^\r$/d')   # Alles danach ist der Body
+              
+              # Repository-Namen extrahieren und anhängen
+              repository_names+=$(echo "$body" | jq -r '.[].name' | tr '\n' ' ')
+              
+              # Nächste URL aus dem Link-Header extrahieren
+              next_url=$(echo "$headers" | grep -oP '(?<=<)[^>]+(?=>; rel="next")' || echo "")
+              
+              echo "Fetched repositories, checking for more pages..."
+          done
+          
           echo "::group:: Found the following repositories"
           echo "$repository_names" | sed 's/[^ ]*/- &/g'
           echo "::endgroup::"
@@ -71,7 +88,7 @@ jobs:
               labels_url="https://api.github.com/repos/$organization/$repository_name/labels"
               
               echo "Fetching labels..."
-              labels_response=$(curl -s $labels_url)
+              labels_response=$(curl -s -H "Accept: application/vnd.github.v3+json" $labels_url)
 
               # Extract all categories (labels with prefix "category: ")
               categories=$(echo "$labels_response" | jq -r '.[] | select(.name | startswith("category: ")) | .name' | sed 's/category: //')
@@ -110,6 +127,7 @@ jobs:
           echo "Done generating JSON data"
           
           echo "$category_data" > "profile/category_data.json"
+
 
       - name: Generate README from Template
         run: |
